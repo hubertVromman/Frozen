@@ -17,6 +17,7 @@ type User struct {
 
 type Message struct {
 	data string
+	nick string
 	channel_id int
 }
 
@@ -30,7 +31,7 @@ func sendData(conn net.Conn, message *Message, users *[]User, user_id *int, chan
 	for {
 		if *user_id != -1 && message.channel_id != -1 {
 			if message.channel_id == (*users)[*user_id].cur_channel {
-				conn.Write([]byte(message.data))
+				conn.Write([]byte(message.nick + ": " + message.data))
 			}
 			<-time.After(time.Millisecond)
 			message.channel_id = -1
@@ -49,13 +50,16 @@ func getData(conn net.Conn, message *Message, users *[]User, user_id *int, chann
 		if strings.HasPrefix(buf, "PASS NICK USER") {
 			buf = strings.TrimSpace(strings.Replace(buf, "PASS NICK USER", "", 1))
 			separated := strings.Split(buf, " ")
+			if len(separated) != 3 {
+				return
+			}
 			*user_id = -1
 			for n := range *users {
 				if (*users)[n].username == separated[2] {
 					if (*users)[n].password == separated[0] {
 						*user_id = n
 					} else {
-						return //*message = "auth failed\n"
+						return
 					}
 				}
 			}
@@ -79,7 +83,7 @@ func getData(conn net.Conn, message *Message, users *[]User, user_id *int, chann
 			}
 			fmt.Println((*channels)[(*users)[*user_id].cur_channel])
 		} else if *user_id != -1 && (*users)[*user_id].cur_channel != -1 {
-			*message = Message{buf, (*users)[*user_id].cur_channel}
+			*message = Message{buf, (*users)[*user_id].nickname, (*users)[*user_id].cur_channel}
 		}
 	}
 }

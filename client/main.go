@@ -2,9 +2,11 @@ package main
 
 import (
 	"net"
-	"os"
+	// "os"
 	"fmt"
 	"bufio"
+	"strings"
+	"io"
 )
 
 func getMessage(conn net.Conn) {
@@ -19,7 +21,7 @@ func getMessage(conn net.Conn) {
 }
 
 func main() {
-	conn, err := net.Dial("tcp", "localhost:8080")
+	conn, err := net.Dial("tcp", "10.1.11.3:8080")
 	defer conn.Close()
 	if err != nil {
 		// handle error
@@ -30,9 +32,13 @@ func main() {
 	// 	// handle error
 	// }
 	// fmt.Println(status);
+	reader := bufio.NewReader(os.Stdin)
 	go getMessage(conn)
 	for {
-		buf, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+		buf, _ := reader.ReadString('\n')
+		// for i := 0; i < len(buf); i++ {
+			// fmt.Print("\b")
+		// }
 		conn.Write([]byte(buf))
 	}
 }
