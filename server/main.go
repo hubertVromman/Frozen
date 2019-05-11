@@ -1,16 +1,39 @@
 package main
 
 import (
-	"net/http"
+	"net"
 	"fmt"
+	"bufio"
 	// "html"
 )
 
+func handleConnection(conn net.Conn) {
+	reader := bufio.NewReader(conn)
+	for {
+		// buf := make([]byte, 0, 4096)
+		buf, err := reader.ReadString('\n')
+		if err != nil {
+			return
+		}
+		// fmt.Println(nbytes);
+		fmt.Println("New message :")
+		fmt.Print(buf)
+	}
+}
+
 func main() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hello, %s", r.URL.Path[1:])
-	})
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		fmt.Printf("Error");
+	fmt.Println("Starting server...")
+	ln, err := net.Listen("tcp", ":8080")
+	if err != nil {
+		// handle error
+	}
+	fmt.Println("Server started")
+	for {
+		conn, err := ln.Accept()
+		if err != nil {
+			// handle error
+		}
+		fmt.Println("New connection !")
+		go handleConnection(conn)
 	}
 }

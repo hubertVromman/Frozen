@@ -1,20 +1,27 @@
 package main
 
 import (
-	"net/http"
-	"fmt"
-	"io/ioutil"
+	"net"
+	"os"
+	// "fmt"
+	"bufio"
+	// "io/ioutil"
 )
 
 func main() {
-	resp, err := http.Get("http://localhost:8080/Hubert et moi")
+	conn, err := net.Dial("tcp", "localhost:8080")
+	defer conn.Close()
 	if err != nil {
-		fmt.Printf("Connection error");
+		// handle error
 	}
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Printf("Read error");
+	// fmt.Fprintf(conn, "GET / HTTP/1.0\r\n\r\n")
+	// status, err := bufio.NewReader(conn).ReadString('\n')
+	// if err != nil {
+	// 	// handle error
+	// }
+	// fmt.Println(status);
+	for {
+		buf, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+		conn.Write([]byte(buf))
 	}
-	err = nil
-	fmt.Printf("%s\n", body)
 }
