@@ -3,10 +3,20 @@ package main
 import (
 	"net"
 	"os"
-	// "fmt"
+	"fmt"
 	"bufio"
-	// "io/ioutil"
 )
+
+func getMessage(conn net.Conn) {
+	reader := bufio.NewReader(conn)
+	for {
+		buf, err := reader.ReadString('\n')
+		if err != nil {
+			return
+		}
+		fmt.Print(buf)
+	}
+}
 
 func main() {
 	conn, err := net.Dial("tcp", "localhost:8080")
@@ -20,6 +30,7 @@ func main() {
 	// 	// handle error
 	// }
 	// fmt.Println(status);
+	go getMessage(conn)
 	for {
 		buf, _ := bufio.NewReader(os.Stdin).ReadString('\n')
 		conn.Write([]byte(buf))
