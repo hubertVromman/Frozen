@@ -27,7 +27,7 @@ func sendData(conn net.Conn, message *string , users []User, user_id *int) {
 	}
 }
 
-func getData(conn net.Conn, message *string, users []User, user_id *int) {
+func getData(conn net.Conn, message *string, users *[]User, user_id *int) {
 	reader := bufio.NewReader(conn)
 	for {
 		// buf := make([]byte, 0, 4096)
@@ -42,9 +42,9 @@ func getData(conn net.Conn, message *string, users []User, user_id *int) {
 			separated := strings.Split(buf, " ")
 			fmt.Println(separated, len(separated))
 			*user_id = -1
-			for n := range users {
-				if users[n].username == separated[0] {
-					if users[n].password == separated[1] {
+			for n := range *users {
+				if (*users)[n].username == separated[0] {
+					if (*users)[n].password == separated[1] {
 						*user_id = n
 					} else {
 						*message = "auth failed\n"
@@ -52,15 +52,10 @@ func getData(conn net.Conn, message *string, users []User, user_id *int) {
 				}
 			}
 			if *user_id == -1 {
-				new_user := User{
-					separated[0],
-					separated[1],
-					separated[0],
-					-1}
-				users = append(users, new_user)
-				*user_id = len(users) - 1;
+				*users = append(*users,  User{separated[0], separated[1], separated[0], -1})
+				*user_id = len(*users) - 1;
 			}
-			fmt.Println(users[*user_id], *user_id)
+			fmt.Println((*users)[*user_id], *user_id)
 		} else {
 			newbuf := buf
 			*message = newbuf
@@ -86,7 +81,7 @@ func main() {
 		}
 		fmt.Println("New connection !")
 		users_id = append(users_id, -1)
-		go getData(conn, &message, users, &users_id[len(users_id) - 1])
+		go getData(conn, &message, &users, &users_id[len(users_id) - 1])
 		go sendData(conn, &message, users, &users_id[len(users_id) - 1])
 	}
 }
