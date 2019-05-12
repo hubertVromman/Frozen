@@ -66,7 +66,9 @@ func sendData(message Message, users []User, channels []Channel) {
 
 func getData(users *[]User, channels *[]Channel, id int) {
 	reader := bufio.NewReader((*users)[id].conn)
+	fmt.Println("user: ", id, " in getData loop")
 	for {
+		fmt.Println("user: ", id, " in getData loop")
 		buf, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Connexion lost with", (*users)[id], (*users)[id].conn.RemoteAddr().String())
@@ -82,10 +84,10 @@ func getData(users *[]User, channels *[]Channel, id int) {
 			}
 		}
 		if (strings.HasPrefix(buf, "USER ")){
-			USER_cmd(strings.Trim(strings.Split(strings.TrimPrefix(buf, "USER "), " ")[0], " "), id, users)
+			send_mp((*users)[id], "462 :You may not reregister")
 		}
 		if (strings.HasPrefix(buf, "PASS ")){
-			PASS_cmd(strings.Trim(strings.TrimPrefix(buf, "USER "), " "), id, users)
+			send_mp((*users)[id], "462 :You may not reregister")
 		}
 		if (strings.HasPrefix(buf, "JOIN ")){
 			JOIN_cmd(strings.Trim(strings.TrimPrefix(buf, "USER "), " "), id, users)
@@ -117,11 +119,11 @@ func	identification(users *[]User, this_user *User) (mod, id int) {
 					return
 				}else{
 					mod = 2
-					send_mp(*this_user, "433 client " + this_user.nickname + " :Nickname is already in use")
+					send_mp(*this_user, "433 " + this_user.nickname + " :Nickname is already in use")
 					return
 				}
 			}else{
-				send_mp(*this_user, "464 client :Password incorrect")
+				send_mp(*this_user, "464 :Password incorrect")
 				return
 			}
 		}
@@ -129,7 +131,7 @@ func	identification(users *[]User, this_user *User) (mod, id int) {
 	for i:= range *users{
 		if (strings.Compare((*this_user).nickname, (*users)[i].nickname) == 0){
 			mod = 2
-			send_mp(*this_user, "433 client " + this_user.nickname + " :Nickname is already in use")
+			send_mp(*this_user, "433 " + this_user.nickname + " :Nickname is already in use")
 			return
 		}
 	}
@@ -177,6 +179,9 @@ func tmp_getData(conn net.Conn, users *[]User, channels *[]Channel) {
 		}
 		if (strings.HasPrefix(buf, "USER ")){
 			this_user.username = strings.Split(strings.Trim(strings.TrimPrefix(buf, "USER "), " "), " ")[0]
+			if (strings.Compare(this_user.username, "") == 0){
+				send_mp(this_user, "461 USER :Not enough parameters")
+			}
 			var mod int
 			mod, id = identification(users, &this_user)
 			fmt.Println("New co user: " , this_user.username, "mod:", mod)

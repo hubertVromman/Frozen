@@ -28,13 +28,13 @@ func	NICK_cmd(msg string, id int, users *[]User)(string){
 	}
 	if (len(msg) > MAXNICKLEN || strings.Contains(msg, " ")){
 		fmt.Println("error 432")
-		return ("432 client " + nickname + " :Erroneus nickname")
+		return ("432 " + nickname + " :Erroneus nickname")
 	}
 	for i := range *users{
 		if (strings.Compare((*users)[i].nickname, msg) == 0){
 			//sauf si premier co
 			fmt.Println("error 433")
-			return ("433 client " + nickname + " :Nickname is already in use")
+			return ("433 " + nickname + " :Nickname is already in use")
 		}
 	}
 //	if (id == -1){
@@ -51,18 +51,6 @@ func	NICK_cmd(msg string, id int, users *[]User)(string){
 	return (":" + nickname + " NICK")
 }
 
-func	USER_cmd(msg string, id int, users *[]User)(int){
-	fmt.Println("USER_cmd:")
-	fmt.Println("Client: ", msg)
-	send_mp((*users)[id], "CAP *")
-	return (1)
-}
-
-func	PASS_cmd(msg string, id int, users *[]User)(int){
-	fmt.Println("PASS_cmd:")
-	fmt.Println("Client: ", msg)
-	return (1)
-}
 func	JOIN_cmd(msg string, id int, users *[]User)(int){
 	fmt.Println("JOIN_cmd:")
 	fmt.Println("Client: ", msg)
