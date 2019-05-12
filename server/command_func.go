@@ -77,26 +77,33 @@ func	PART_cmd(msg []string, id int, users *[]User, channels *map[string][]int)(i
 	fmt.Println("PART_cmd:")
 	fmt.Println("Client: ", msg)
 
-	for i := range strings.Split(msg[0], ",") {
-		if _, ok := (*channels)[msg[i]]; ok{
+
+	fmt.Println("msg received: ", msg)
+
+	names := strings.Split(msg[0], ",")
+	for i := range names{
+		fmt.Println("name: ", names)
+		if _, ok := (*channels)[names[i]]; ok{
 			var boolean bool = false
-			for j:= range (*channels)[msg[i]]{
-				if ((*channels)[msg[i]][j] == id){
+			for j:= range (*channels)[names[i]]{
+				if ((*channels)[names[i]][j] == id){
 					boolean = true
-					//send message
-					tmp := (*channels)[msg[i]][len((*channels)[msg[i]]) - 1]
-					(*channels)[msg[i]][j] = tmp
-					(*channels)[msg[i]] = (*channels)[msg[i]][0:len((*channels)[msg[i]]) - 1]
+			//for k:= range (*channels)[names[i]]{
+				//send message
+			//}
+					tmp := (*channels)[names[i]][len((*channels)[names[i]]) - 1]
+					(*channels)[names[i]][j] = tmp
+					(*channels)[names[i]] = (*channels)[names[i]][0:len((*channels)[names[i]]) - 1]
 				}
 			}
-			if _, ok2 := (*users)[id].cur_channel[msg[1]]; ok2{
-				delete((*users)[id].cur_channel, msg[1])
+			if _, ok2 := (*users)[id].cur_channel[names[i]]; ok2{
+				delete((*users)[id].cur_channel, names[i])
 			}
-			if boolean{
-			send_mp((*users)[id], "442 " + (*users)[id].nickname + " " + msg[1] + " :You're not on that channel")
+			if !boolean{
+			send_mp((*users)[id], "442 " + (*users)[id].nickname + " " + names[i] + " :You're not on that channel")
 		}
 		}else{
-			send_mp((*users)[id], "403 " + (*users)[id].nickname + " " + msg[1] + " :No such channel")
+			send_mp((*users)[id], "403 " + (*users)[id].nickname + " " + names[i] + " :No such channel")
 		}
 	}
 	return (1)

@@ -226,7 +226,7 @@ func tmp_getData(conn net.Conn, users *[]User, channels *map[string][]int) {
 
 func main() {
 	fmt.Println("Starting server...")
-	ln, err := net.Listen("tcp", ":8080")
+	ln, err := net.Listen("tcp", ":6667")
 	if err != nil {
 		fmt.Println("error:", err)
 		os.Exit(-1)
