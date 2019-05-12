@@ -4,7 +4,7 @@ import (
 	"net"
 	"fmt"
 	"bufio"
-	"time"
+	// "time"
 //	"strings"
 )
 
@@ -13,7 +13,9 @@ type User struct {
 	nickname string
 	username string
 	cur_channel []int
+	online bool
 	ip string
+	conn net.Conn
 }
 
 type Message struct {
@@ -24,34 +26,58 @@ type Message struct {
 
 type Channel struct {
 	name string
-	users []User
-	is_open int
+	users_id []int
 }
 
-func sendData(conn net.Conn, message *Message, users *[]User, user_id *int, channels *[]Channel) {
-	for {
-		if *user_id != -1 {
-//			if message.channel_id == (*users)[*user_id].cur_channel {
-//				conn.Write([]byte(message.nick + ": " + message.data))
-//			}
-			<-time.After(time.Millisecond)
-//			message.channel_id = -1
+func send_mp(dest User, message string, error int) bool {
+	if dest.online {
+		dest.conn.Write([]byte(message))
+		return true
+	} else {
+		return false
+	}
+}
+
+func sendData(message Message, users []User, channels []Channel) {
+	if message.dest[0] == '#' { //channel message
+		message.dest = message.dest[1:]
+		for _, channel := range channels {
+			if message.dest == channel.name { //channel found
+				for _, user_id := range channel.users_id { //all users of channel
+					send_mp(users[user_id], message.data)
+				}
+				return
+			}
 		}
+		send_mp(users[message.sender_id], "Channel not found")
+	} else { //private message
+		for _, user := range users {
+			if message.dest == user.nickname { //user found
+				if !send_mp(user, message.data) {
+					send_mp(users[message.sender_id], "User not connected")
+				}
+				return
+			}
+		}
+		send_mp(users[message.sender_id], "User not found")
 	}
 }
 
 func getData(conn net.Conn, message *Message, users *[]User, user_id *int, channels *[]Channel) {
 	reader := bufio.NewReader(conn)
-	buf, err := reader.ReadString('\n')
-	if err != nil {
-		return
+	for {
+		buf, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println(conn == nil)
+			return
+		}
+		fmt.Println(buf)
 	}
-	fmt.Println(buf)
 }
 
 func main() {
 	fmt.Println("Starting server...")
-	ln, err := net.Listen("tcp", ":6667")
+	ln, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		// handle error
 	}
