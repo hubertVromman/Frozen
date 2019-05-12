@@ -165,7 +165,7 @@ func tmp_getData(conn net.Conn, users *[]User, channels *[]Channel) {
 	var this_user User
 	this_user.online = true
 	this_user.conn = conn
-	this_user.username = "#"
+	this_user.username = ""
 	var id int
 	var yolo bool
 	for {
@@ -184,8 +184,11 @@ func tmp_getData(conn net.Conn, users *[]User, channels *[]Channel) {
 			if (len(this_user.nickname) > MAXNICKLEN){
 				send_mp(this_user, "432 " + this_user.nickname + " :Erroneus nickname")
 			}
+			if (len(this_user.nickname) == 0){
+				send_mp(this_user, "431 " + " :No nickname received")
+			}
 			fmt.Println("New co nick: " , this_user.nickname)
-			if (strings.Compare(this_user.username, "#") != 0){
+			if (strings.Compare(this_user.username, "") != 0){
 				var mod int
 				mod, id = identification(users, &this_user)
 				fmt.Println("done with identif from nick", mod)

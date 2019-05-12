@@ -39,13 +39,6 @@ func	NICK_cmd(msg string, id int, users *[]User)(string){
 			return ("433 " + (*users)[id].nickname + " " +  nickname  + " :Nickname is already in use")
 		}
 	}
-//	if (id == -1){
-//		id = len(*users)
-//		(*users)[id].nickname = nickname
-//		*users = append(*users, *this_user)
-//		fmt.Println("Added a new user with ID :" , id)
-//		return (":" + nickname + " NICK " + msg)
-//	}
 	nickname = (*users)[id].nickname
 	(*users)[id].nickname = msg
 	(*users)[id].nickname = msg
