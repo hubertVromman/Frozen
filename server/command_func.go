@@ -171,7 +171,7 @@ func	PRIVMSG_cmd(msg string, id int, users *[]User)(int){
 
 func CAP_END_cmd(this_user *User) (){
 	fmt.Println("CAP_END_cmd")
-	send_mp(*this_user, "001 " + this_user.nickname + " :Welcome to the most modern place to chat, " + this_user.nickname)
+	send_mp(*this_user, "001 " + (*this_user).nickname + " :Welcome to the most modern place to chat, " + this_user.nickname)
 	send_mp(*this_user,
 	"                             ,--.\"\"")
 	send_mp(*this_user,
