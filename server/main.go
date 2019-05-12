@@ -29,7 +29,8 @@ type Channel struct {
 	users_id []int
 }
 
-func send_mp(dest User, message string, error int) bool {
+func send_mp(dest User, message string) bool {
+	message += "\r\n"
 	if dest.online {
 		dest.conn.Write([]byte(message))
 		return true
@@ -44,27 +45,30 @@ func sendData(message Message, users []User, channels []Channel) {
 		for _, channel := range channels {
 			if message.dest == channel.name { //channel found
 				for _, user_id := range channel.users_id { //all users of channel
-					send_mp(users[user_id], message.data, 0)
+					send_mp(users[user_id], message.data)
 				}
 				return
 			}
 		}
-		send_mp(users[message.sender_id], "Channel not found", 0)
+		send_mp(users[message.sender_id], "Channel not found")
 	} else { //private message
 		for _, user := range users {
 			if message.dest == user.nickname { //user found
-				if !send_mp(user, message.data, 0) {
-					send_mp(users[message.sender_id], "User not connected", 0)
+				if !send_mp(user, message.data) {
+					send_mp(users[message.sender_id], "User not connected")
 				}
 				return
 			}
 		}
-		send_mp(users[message.sender_id], "User not found", 0)
+		send_mp(users[message.sender_id], "User not found")
 	}
 }
 
 func getData(conn net.Conn, users *[]User, channels *[]Channel) {
 	reader := bufio.NewReader(conn)
+	var this_user User
+	this_user.online = true
+	this_user.conn = conn
 	var user_id int = -1
 	for {
 		buf, err := reader.ReadString('\n')
@@ -77,30 +81,39 @@ func getData(conn net.Conn, users *[]User, channels *[]Channel) {
 			return
 		}
 		fmt.Println(buf)
+		buf = buf[0:len(buf) - 2]
 		if (strings.HasPrefix(buf, "NICK ")){
-			str := NICK_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "NICK "), " "), &user_id, users)
-			sendData(str, *user, *channel)
+			str := NICK_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "NICK "), " "), &user_id, users, &this_user)
+			if (!(send_mp(this_user, str))){
+				if (user_id != -1){
+					(*users)[user_id].online = false
+				}
+				return
+			}
 		}
 		if (strings.HasPrefix(buf, "USER ")){
-			USER_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), &user_id, users)
+			USER_cmd(conn, strings.Trim(strings.Split(strings.TrimPrefix(buf, "USER "), " ")[0], " "), &user_id, users, &this_user)
 		}
 		if (strings.HasPrefix(buf, "PASS ")){
-			USER_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), &user_id, users)
+			PASS_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), &user_id, users, &this_user)
 		}
 		if (strings.HasPrefix(buf, "JOIN ")){
-			USER_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), &user_id, users)
+			JOIN_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), &user_id, users, &this_user)
 		}
 		if (strings.HasPrefix(buf, "PART ")){
-			USER_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), &user_id, users)
+			PART_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), &user_id, users, &this_user)
 		}
 		if (strings.HasPrefix(buf, "NAMES ")){
-			USER_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), &user_id, users)
+			NAMES_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), &user_id, users, &this_user)
 		}
 		if (strings.HasPrefix(buf, "LIST ")){
-			USER_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), &user_id, users)
+			LIST_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), &user_id, users, &this_user)
 		}
 		if (strings.HasPrefix(buf, "PRIVMSG ")){
-			USER_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), &user_id, users)
+			PRIVMSG_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), &user_id, users, &this_user)
+		}
+		if (strings.HasPrefix(buf, "CAP END")){
+			CAP_END_cmd(conn, &this_user)
 		}
 	}
 }
