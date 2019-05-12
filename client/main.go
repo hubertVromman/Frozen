@@ -2,11 +2,11 @@ package main
 
 import (
 	"net"
-	// "os"
+	"os"
 	"fmt"
 	"bufio"
-	"strings"
-	"io"
+	// "strings"
+	// "io"
 )
 
 func getMessage(conn net.Conn) {
@@ -21,11 +21,13 @@ func getMessage(conn net.Conn) {
 }
 
 func main() {
-	conn, err := net.Dial("tcp", "10.1.11.3:8080")
-	defer conn.Close()
+	conn, err := net.Dial("tcp", "192.168.1.14:6667")
+	
 	if err != nil {
-		// handle error
+		fmt.Println("connection failed")
+		return
 	}
+	defer conn.Close()
 	// fmt.Fprintf(conn, "GET / HTTP/1.0\r\n\r\n")
 	// status, err := bufio.NewReader(conn).ReadString('\n')
 	// if err != nil {
