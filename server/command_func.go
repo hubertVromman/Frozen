@@ -91,10 +91,10 @@ func	NAMES_cmd(msg string, id int, users *[]User)(int){
 	fmt.Println("Client: ", msg)
 	return (1)
 }
-func	LIST_cmd(msg string, id int, users *[]User)(int){
+func	LIST_cmd(msg string, user_id int, users *[]User)(int) {
 	fmt.Println("LIST_cmd:")
 	fmt.Println("Client: ", msg)
-	return (1)
+	return (0)
 }
 func	PRIVMSG_cmd(msg string, id int, users *[]User)(int){
 	fmt.Println("PRIVMSG_cmd:")
