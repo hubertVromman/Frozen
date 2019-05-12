@@ -7,13 +7,13 @@ import (
 )
 
 const (
-//	NICK
+	//	NICK
 	ERR_NONICKNAMEGIVEN = 431
 	ERR_ERRONEUSNICKNAME = 432
 	ERR_NICKNAMEINUSE = 433
 	ERR_NICKCOLLISION = 436
 	MAXNICKLEN = 15
-//	USER
+	//	USER
 	R_NEEDMOREPARAMS = 461
 	ERR_ALREADYREGISTRED = 462
 )
@@ -85,12 +85,23 @@ func	PART_cmd(msg []string, id int, users *[]User, channels *map[string][]int)(i
 	fmt.Println("Client: ", msg)
 
 	for i := range msg[1]{
-		if _, ok := *channels[msg[i]]; ok{
-			for j:= range *channels[msg[i]]{
-				if (*channels[msg[i]] == id){
-					
+		if _, ok := (*channels)[msg[i]]; ok{
+			var boolean bool = false
+			for j:= range (*channels)[msg[i]]{
+				if ((*channels)[msg[i]][j] == id){
+					boolean = true
+					//send message
+					tmp := (*channels)[msg[i]][len((*channels)[msg[i]]) - 1]
+					(*channels)[msg[i]][j] = tmp
+					(*channels)[msg[i]] = (*channels)[msg[i]][0:len((*channels)[msg[i]]) - 1]
 				}
 			}
+			if _, ok2 := (*users)[id].cur_channel[msg[1]]; ok2{
+				delete((*users)[id].cur_channel, msg[1])
+			}
+			if boolean{
+			send_mp((*users)[id], "442 " + (*users)[id].nickname + " " + msg[1] + " :You're not on that channel")
+		}
 		}else{
 			send_mp((*users)[id], "403 " + (*users)[id].nickname + " " + msg[1] + " :No such channel")
 		}
@@ -132,72 +143,72 @@ func CAP_END_cmd(this_user *User) (){
 	fmt.Println("CAP_END_cmd")
 	send_mp(*this_user, "001 :Welcome to the most modern place to chat, " + this_user.nickname)
 	send_mp(*this_user, "002 :" +
-"                             ,--.\"\"")
+	"                             ,--.\"\"")
 	send_mp(*this_user, "002 :" +
-"                      __,----( o ))")
+	"                      __,----( o ))")
 	send_mp(*this_user, "002 :" +
-"                    ,'--.      , (")
+	"                    ,'--.      , (")
 	send_mp(*this_user, "002 :" +
-"             -\"\",:-(    o ),-'/  ;")
+	"             -\"\",:-(    o ),-'/  ;")
 	send_mp(*this_user, "002 :" +
-"               ( o) `o  _,'\\ / ;(")
+	"               ( o) `o  _,'\\ / ;(")
 	send_mp(*this_user, "002 :" +
-"                `-;_-<'\\_|-'/ '  )")
+	"                `-;_-<'\\_|-'/ '  )")
 	send_mp(*this_user, "002 :" +
-"                    `.`-.__/ '   |")
+	"                    `.`-.__/ '   |")
 	send_mp(*this_user, "002 :" +
-"       \\`.            `. .__,   ;")
+	"       \\`.            `. .__,   ;")
 	send_mp(*this_user, "002 :" +
-"        )_;--.         \\`       |")
+	"        )_;--.         \\`       |")
 	send_mp(*this_user, "002 :" +
-"       /'(__,-:         )      ;")
+	"       /'(__,-:         )      ;")
 	send_mp(*this_user, "002 :" +
-"     ;'    (_,-:     _,::     .|")
+	"     ;'    (_,-:     _,::     .|")
 	send_mp(*this_user, "002 :" +
-"    ;       ( , ) _,':::'    ,;")
+	"    ;       ( , ) _,':::'    ,;")
 	send_mp(*this_user, "002 :" +
-"   ;         )-,;'  `:'     .::")
+	"   ;         )-,;'  `:'     .::")
 	send_mp(*this_user, "002 :" +
-"   |         `'  ;         `:::\\")
+	"   |         `'  ;         `:::\\")
 	send_mp(*this_user, "002 :" +
-"   :       ,'    '            `:\\")
+	"   :       ,'    '            `:\\")
 	send_mp(*this_user, "002 :" +
-"   ;:    '  _,-':         .'     `-.")
+	"   ;:    '  _,-':         .'     `-.")
 	send_mp(*this_user, "002 :" +
-"    ';::..,'  ' ,        `   ,__    `.")
+	"    ';::..,'  ' ,        `   ,__    `.")
 	send_mp(*this_user, "002 :" +
-"      `;''   / ;           _;_,-'     `.")
+	"      `;''   / ;           _;_,-'     `.")
 	send_mp(*this_user, "002 :" +
-"            /            _;--.          \\")
+	"            /            _;--.          \\")
 	send_mp(*this_user, "002 :" +
-"          ,'            / ,'  `.         \\")
+	"          ,'            / ,'  `.         \\")
 	send_mp(*this_user, "002 :" +
-"         /:            (_(   ,' \\         )")
+	"         /:            (_(   ,' \\         )")
 	send_mp(*this_user, "002 :" +
-"        /:.               \\_(  /-. .:::,;/")
+	"        /:.               \\_(  /-. .:::,;/")
 	send_mp(*this_user, "002 :" +
-"       (::..                 `-'\\ \"`\"\"'")
+	"       (::..                 `-'\\ \"`\"\"'")
 	send_mp(*this_user, "002 :" +
-"       ;::::.                    \\        __")
+	"       ;::::.                    \\        __")
 	send_mp(*this_user, "002 :" +
-"       ,::::::.            .:'    )    ,-'  )")
+	"       ,::::::.            .:'    )    ,-'  )")
 	send_mp(*this_user, "002 :" +
-"      /  `;:::::::'`__,:.:::'    /`---'   ,'")
+	"      /  `;:::::::'`__,:.:::'    /`---'   ,'")
 	send_mp(*this_user, "002 :" +
-"     ;    `\"\"\"\"'   (  \\:::'     /     _,-'")
+	"     ;    `\"\"\"\"'   (  \\:::'     /     _,-'")
 	send_mp(*this_user, "002 :" +
-"     ;              \\  \\:'    ,';:.,-'")
+	"     ;              \\  \\:'    ,';:.,-'")
 	send_mp(*this_user, "002 :" +
-"     (              :  )\\    (")
+	"     (              :  )\\    (")
 	send_mp(*this_user, "002 :" +
-"      `.             \\   \\    ;")
+	"      `.             \\   \\    ;")
 	send_mp(*this_user, "002 :" +
-"        `-.___       : ,\\ \\  (")
+	"        `-.___       : ,\\ \\  (")
 	send_mp(*this_user, "002 :" +
-"           ,','._::::| \\ \\ \\  \\")
+	"           ,','._::::| \\ \\ \\  \\")
 	send_mp(*this_user, "002 :" +
-"          (,(,---;;;;;  \\ \\|;;;)")
+	"          (,(,---;;;;;  \\ \\|;;;)")
 	send_mp(*this_user, "002 :" +
-"                      `._\\_\\")
+	"                      `._\\_\\")
 	return
 }
