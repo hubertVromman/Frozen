@@ -38,30 +38,30 @@ func send_mp(dest User, message string) bool {
 // 	conn.Write([]byte(message))
 // }
 
-func sendData(message Message, users []User, channels map[string]int) {
-	if message.dest[0] == '#' { //channel message
-		message.dest = message.dest[1:]
-		for _, channel := range channels {
-			if message.dest == channel.name { //channel found
-				for _, user_id := range channel.users_id { //all users of channel
-					send_mp(users[user_id], message.data)
-				}
-				return
-			}
-		}
-		send_mp(users[message.sender_id], "Channel not found")
-	} else { //private message
-		for _, user := range users {
-			if message.dest == user.nickname { //user found
-				if !send_mp(user, message.data) {
-					send_mp(users[message.sender_id], "User not connected")
-				}
-				return
-			}
-		}
-		send_mp(users[message.sender_id], string(401) + " " + message.dest +":No suck nick/channel")
-	}
-}
+// func sendData(message Message, users []User, channels map[string]int) {
+// 	if message.dest[0] == '#' { //channel message
+// 		message.dest = message.dest[1:]
+// 		for _, channel := range channels {
+// 			if message.dest == channel.name { //channel found
+// 				for _, user_id := range channel.users_id { //all users of channel
+// 					send_mp(users[user_id], message.data)
+// 				}
+// 				return
+// 			}
+// 		}
+// 		send_mp(users[message.sender_id], "Channel not found")
+// 	} else { //private message
+// 		for _, user := range users {
+// 			if message.dest == user.nickname { //user found
+// 				if !send_mp(user, message.data) {
+// 					send_mp(users[message.sender_id], "User not connected")
+// 				}
+// 				return
+// 			}
+// 		}
+// 		send_mp(users[message.sender_id], string(401) + " " + message.dest +":No suck nick/channel")
+// 	}
+// }
 
 func getData(users *[]User, channels *map[string][]int, id int) {
 	reader := bufio.NewReader((*users)[id].conn)
