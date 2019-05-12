@@ -105,8 +105,8 @@ func getData(users *[]User, channels *map[string][]int, id int) {
 		// 	buf = strings.Replace(buf, "PART ", "LIST ", 1)
 
 		// }
-		if (strings.HasPrefix(buf, "NAMES ")) {
-			NAMES_cmd(strings.Trim(strings.TrimPrefix(buf, "USER "), " "), id, users)
+		if (strings.HasPrefix(buf, "NAMES")) {
+			NAMES_cmd(strings.Split(strings.Trim(strings.TrimPrefix(buf, "NAMES"), " "), " ")[0], id, users, channels)
 		}
 		if (strings.HasPrefix(buf, "LIST")) {
 			LIST_cmd(strings.Split(strings.Trim(strings.TrimPrefix(buf, "LIST"), " "), " "), id, users, channels)

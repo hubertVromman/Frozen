@@ -88,12 +88,14 @@ func	PART_cmd(msg []string, id int, users *[]User, channels *map[string][]int)(i
 			for j:= range (*channels)[names[i]]{
 				if ((*channels)[names[i]][j] == id){
 					boolean = true
-			//for k:= range (*channels)[names[i]]{
-				//send message
-			//}
+					send_mp((*users)[id], ": You left the channel" + names[i])
 					tmp := (*channels)[names[i]][len((*channels)[names[i]]) - 1]
 					(*channels)[names[i]][j] = tmp
 					(*channels)[names[i]] = (*channels)[names[i]][0:len((*channels)[names[i]]) - 1]
+					break
+			//for k:= range (*channels)[names[i]]{
+				//send message
+			//}
 				}
 			}
 			if _, ok2 := (*users)[id].cur_channel[names[i]]; ok2{
@@ -109,9 +111,35 @@ func	PART_cmd(msg []string, id int, users *[]User, channels *map[string][]int)(i
 	return (1)
 }
 
-func	NAMES_cmd(msg string, id int, users *[]User)(int){
+func	NAMES_cmd(msg string, id int, users *[]User, channels *map[string][]int)(int){
 	fmt.Println("NAMES_cmd:")
 	fmt.Println("Client: ", msg)
+
+	var boolean bool
+	names := strings.Split(msg, ",")
+	if names[0] != ""{
+		for i:= range names{
+			fmt.Println("debug", names[i])
+			boolean = true
+			if _, ok := (*channels)[names[i]]; ok{
+				for value, _:= range (*channels)[names[i]]{
+					send_mp((*users)[id], "353 = " + names[i] + " :" + (*users)[value].nickname)
+				}
+				send_mp((*users)[id], "366 " + (*users)[id].nickname + " " + names[i] + " :End of /NAMES list")
+			}else{
+				send_mp((*users)[id], "401 " + names[i] + " :No such channel")
+			}
+		}
+	}
+	if !boolean{
+		for i:= range *channels{
+			for value, _:= range (*channels)[i]{
+				send_mp((*users)[id], "353 = " + i + " :" + (*users)[value].nickname)
+			}
+			send_mp((*users)[id], "366 " + (*users)[id].nickname + " " + i + " :End of /NAMES list")
+		}
+		send_mp((*users)[id], "366 " + (*users)[id].nickname + " * :End of /NAMES list")
+	}
 	return (1)
 }
 
@@ -143,74 +171,74 @@ func	PRIVMSG_cmd(msg string, id int, users *[]User)(int){
 
 func CAP_END_cmd(this_user *User) (){
 	fmt.Println("CAP_END_cmd")
-	send_mp(*this_user, "001 :Welcome to the most modern place to chat, " + this_user.nickname)
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user, "001 " + this_user.nickname + " :Welcome to the most modern place to chat, " + this_user.nickname)
+	send_mp(*this_user,
 	"                             ,--.\"\"")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"                      __,----( o ))")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"                    ,'--.      , (")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"             -\"\",:-(    o ),-'/  ;")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"               ( o) `o  _,'\\ / ;(")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"                `-;_-<'\\_|-'/ '  )")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"                    `.`-.__/ '   |")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"       \\`.            `. .__,   ;")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"        )_;--.         \\`       |")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"       /'(__,-:         )      ;")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"     ;'    (_,-:     _,::     .|")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"    ;       ( , ) _,':::'    ,;")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"   ;         )-,;'  `:'     .::")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"   |         `'  ;         `:::\\")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"   :       ,'    '            `:\\")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"   ;:    '  _,-':         .'     `-.")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"    ';::..,'  ' ,        `   ,__    `.")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"      `;''   / ;           _;_,-'     `.")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"            /            _;--.          \\")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"          ,'            / ,'  `.         \\")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"         /:            (_(   ,' \\         )")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"        /:.               \\_(  /-. .:::,;/")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"       (::..                 `-'\\ \"`\"\"'")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"       ;::::.                    \\        __")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"       ,::::::.            .:'    )    ,-'  )")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"      /  `;:::::::'`__,:.:::'    /`---'   ,'")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"     ;    `\"\"\"\"'   (  \\:::'     /     _,-'")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"     ;              \\  \\:'    ,';:.,-'")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"     (              :  )\\    (")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"      `.             \\   \\    ;")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"        `-.___       : ,\\ \\  (")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"           ,','._::::| \\ \\ \\  \\")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"          (,(,---;;;;;  \\ \\|;;;)")
-	send_mp(*this_user, "002 :" +
+	send_mp(*this_user,
 	"                      `._\\_\\")
 	return
 }
