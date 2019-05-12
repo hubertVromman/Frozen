@@ -112,7 +112,7 @@ func getData(users *[]User, channels *map[string][]int, id int) {
 			LIST_cmd(strings.Split(strings.Trim(strings.TrimPrefix(buf, "LIST"), " "), " "), id, users, channels)
 		}
 		if (strings.HasPrefix(buf, "PRIVMSG ")) {
-			PRIVMSG_cmd(strings.Trim(strings.TrimPrefix(buf, "PRIVMSG "), " "), id, users)
+			PRIVMSG_cmd(strings.Trim(strings.TrimPrefix(buf, "PRIVMSG "), " "), id, users, *channels)
 		}
 		if (strings.HasPrefix(buf, "QUIT")){
 			(*users)[id].online = false

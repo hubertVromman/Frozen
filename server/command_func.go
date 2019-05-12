@@ -163,9 +163,44 @@ func	LIST_cmd(msg []string, user_id int, users *[]User, channels *map[string][]i
 	return (0)
 }
 
-func	PRIVMSG_cmd(msg string, id int, users *[]User)(int){
+func	PRIVMSG_cmd(str string, id int, users *[]User, channel map[string][]int)(int){
 	fmt.Println("PRIVMSG_cmd:")
-	fmt.Println(msg)
+	fmt.Println(str)
+
+	whole := strings.Split(str, ":")
+	tab := strings.Split(whole[0], " ")
+	names := strings.Split(tab[0], ",")
+	if (len(whole) > 1){
+		for i := range names{
+			if names[i][0] == '#'{
+				var chan_found bool
+				if _, ok := channel[names[i]];ok{
+					chan_found = true
+					for id_of_chan,_ := range channel[names[i]]{
+						send_mp((*users)[id_of_chan], ": " + (*users)[id].nickname + " PRIVMSG " + names[i] + " :" + whole[1])
+					}
+					if !chan_found{
+						send_mp((*users)[id], "401: " + (*users)[id].nickname + " " + names[i] + " :No such channel")
+					}
+				}else{
+					send_mp((*users)[id], "401: " + (*users)[id].nickname + " " + names[i] + " :No such channel")
+				}
+			}else{
+				var someone_found bool
+				for j := range *users{
+					if (*users)[j].nickname == names[i]{
+						someone_found = true
+						send_mp((*users)[j], ": " + (*users)[id].nickname + " PRIVMSG " + names[i] + " :" + whole[1])
+					}
+				}
+				if (!someone_found){
+					send_mp((*users)[id], "401: " + (*users)[id].nickname + " " + names[i] + " :No such nick")
+				}
+			}
+		}
+	}else{
+		send_mp((*users)[id], "412 " + (*users)[id].nickname + " :No text to send")
+	}
 	return (1)
 }
 
