@@ -4,7 +4,6 @@ import (
 	"net"
 	"fmt"
 	"bufio"
-	"time"
 	"os"
 	"strings"
 )
@@ -14,6 +13,7 @@ type User struct {
 	nickname string
 	username string
 	cur_channel []int
+	online bool
 	ip string
 	conn net.Conn
 }
@@ -44,22 +44,22 @@ func sendData(message Message, users []User, channels []Channel) {
 		for _, channel := range channels {
 			if message.dest == channel.name { //channel found
 				for _, user_id := range channel.users_id { //all users of channel
-					send_mp(users[user_id], message.data)
+					send_mp(users[user_id], message.data, 0)
 				}
 				return
 			}
 		}
-		send_mp(users[message.sender_id], "Channel not found")
+		send_mp(users[message.sender_id], "Channel not found", 0)
 	} else { //private message
 		for _, user := range users {
 			if message.dest == user.nickname { //user found
-				if !send_mp(user, message.data) {
-					send_mp(users[message.sender_id], "User not connected")
+				if !send_mp(user, message.data, 0) {
+					send_mp(users[message.sender_id], "User not connected", 0)
 				}
 				return
 			}
 		}
-		send_mp(users[message.sender_id], "User not found")
+		send_mp(users[message.sender_id], "User not found", 0)
 	}
 }
 
