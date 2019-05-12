@@ -12,7 +12,7 @@ type User struct {
 	password string
 	nickname string
 	username string
-	cur_channel []int
+	cur_channel map[string]bool
 	online bool
 	conn net.Conn
 }
@@ -21,11 +21,6 @@ type Message struct {
 	data string
 	sender_id int
 	dest string
-}
-
-type Channel struct {
-	name string
-	users_id []int
 }
 
 func send_mp(dest User, message string) bool {
@@ -43,7 +38,7 @@ func send_mp(dest User, message string) bool {
 // 	conn.Write([]byte(message))
 // }
 
-func sendData(message Message, users []User, channels []Channel) {
+func sendData(message Message, users []User, channels map[string]int) {
 	if message.dest[0] == '#' { //channel message
 		message.dest = message.dest[1:]
 		for _, channel := range channels {
@@ -68,7 +63,7 @@ func sendData(message Message, users []User, channels []Channel) {
 	}
 }
 
-func getData(users *[]User, channels *[]Channel, id int) {
+func getData(users *[]User, channels *map[string][]int, id int) {
 	reader := bufio.NewReader((*users)[id].conn)
 	fmt.Println("user: ", id, " in getData loop")
 	defer (*users)[id].conn.Close()
@@ -104,11 +99,11 @@ func getData(users *[]User, channels *[]Channel, id int) {
 			JOIN_cmd(strings.Trim(strings.Split(strings.TrimPrefix(buf, "JOIN "), " ")[0], " "), id, users, channels)
 		}
 		if (strings.HasPrefix(buf, "PART ")) {
-			PART_cmd(strings.Trim(strings.TrimPrefix(buf, "USER "), " "), id, users)
+			PART_cmd(strings.Split(strings.Trim(strings.TrimPrefix(buf, "USER "), " "), " "), id, users, channels)
 		}
 		// if (strings.HasPrefix(buf, "WHO ")){
 		// 	buf = strings.Replace(buf, "PART ", "LIST ", 1)
-		
+
 		// }
 		if (strings.HasPrefix(buf, "NAMES ")) {
 			NAMES_cmd(strings.Trim(strings.TrimPrefix(buf, "USER "), " "), id, users)
@@ -162,12 +157,13 @@ func	identification(users *[]User, this_user *User) (mod, id int) {
 	return
 }
 
-func tmp_getData(conn net.Conn, users *[]User, channels *[]Channel) {
+func tmp_getData(conn net.Conn, users *[]User, channels *map[string][]int) {
 	reader := bufio.NewReader(conn)
 	var this_user User
 	this_user.online = true
 	this_user.conn = conn
 	this_user.username = ""
+	this_user.cur_channel = make(map[string]bool)
 	var id int
 	var yolo bool
 	for {
@@ -236,7 +232,7 @@ func main() {
 		os.Exit(-1)
 	}
 	var users []User
-	var channels []Channel
+	channels := make(map[string][]int)
 	// go getAllMessages(&str)
 	fmt.Println("Server started")
 	for {

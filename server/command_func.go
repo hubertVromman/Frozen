@@ -46,7 +46,7 @@ func	NICK_cmd(msg string, id int, users *[]User)(string){
 	return (":" + nickname + " NICK")
 }
 
-func	JOIN_cmd(msg string, user_id int, users *[]User, channels *[]Channel) (int) {
+func	JOIN_cmd(msg string, user_id int, users *[]User, channels *map[string][]int) (int) {
 	fmt.Println("JOIN_cmd:")
 	fmt.Println("Client: ", msg)
 	splitted := strings.Split(msg, ",")
@@ -80,10 +80,21 @@ func	JOIN_cmd(msg string, user_id int, users *[]User, channels *[]Channel) (int)
 	}
 	return (0)
 }
-func	PART_cmd(msg string, id int, users *[]User)(int){
+func	PART_cmd(msg []string, id int, users *[]User, channels *map[string][]int)(int){
 	fmt.Println("PART_cmd:")
 	fmt.Println("Client: ", msg)
-	
+
+	for i := range msg[1]{
+		if _, ok := *channels[msg[i]]; ok{
+			for j:= range *channels[msg[i]]{
+				if (*channels[msg[i]] == id){
+					
+				}
+			}
+		}else{
+			send_mp((*users)[id], "403 " + (*users)[id].nickname + " " + msg[1] + " :No such channel")
+		}
+	}
 	return (1)
 }
 func	NAMES_cmd(msg string, id int, users *[]User)(int){
