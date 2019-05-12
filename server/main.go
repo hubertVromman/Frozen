@@ -75,9 +75,14 @@ func getData(users *[]User, channels *[]Channel, id int) {
 			return
 		}
 		fmt.Println("New message from client: " , buf)
-		buf = buf[0:len(buf) - 2]
+		if (len(buf) > 1){
+			buf = buf[0:len(buf) - 2]
+		}
 		if (strings.HasPrefix(buf, "NICK ")){
 			str := NICK_cmd(strings.Trim(strings.TrimPrefix(buf, "NICK "), " "), id, users)
+			if (strings.Compare(str, "") == 0){
+				continue
+			}
 			if (!(send_mp((*users)[id], str))){
 				(*users)[id].online = false
 				return
@@ -104,6 +109,10 @@ func getData(users *[]User, channels *[]Channel, id int) {
 		if (strings.HasPrefix(buf, "PRIVMSG ")){
 			PRIVMSG_cmd(strings.Trim(strings.TrimPrefix(buf, "USER "), " "), id, users)
 		}
+		if (strings.HasPrefix(buf, "QUIT")){
+			(*users)[id].online = false
+			return
+		}
 	}
 }
 
@@ -119,7 +128,7 @@ func	identification(users *[]User, this_user *User) (mod, id int) {
 					return
 				}else{
 					mod = 2
-					send_mp(*this_user, "433 " + this_user.nickname + " :Nickname is already in use")
+					send_mp(*this_user, "433 * " + this_user.nickname + " :Nickname is already in use")
 					return
 				}
 			}else{
@@ -131,7 +140,7 @@ func	identification(users *[]User, this_user *User) (mod, id int) {
 	for i:= range *users{
 		if (strings.Compare((*this_user).nickname, (*users)[i].nickname) == 0){
 			mod = 2
-			send_mp(*this_user, "433 " + this_user.nickname + " :Nickname is already in use")
+			send_mp(*this_user, "433 * " + this_user.nickname + " :Nickname is already in use")
 			return
 		}
 	}
@@ -153,13 +162,19 @@ func tmp_getData(conn net.Conn, users *[]User, channels *[]Channel) {
 	var yolo bool
 	for {
 		buf, err:= reader.ReadString('\n')
+		if (len(buf) > 1){
+			buf = buf[0:len(buf) - 2]
+		}
 		fmt.Println(buf)
 		if err != nil {
 			fmt.Println("Connexion lost with", "unkown user", conn.RemoteAddr().String())
 			return
 		}
 		if (strings.HasPrefix(buf, "NICK ")){
-			this_user.nickname = strings.Trim(strings.TrimPrefix(buf, "NICK "), " ")
+			this_user.nickname = strings.Split(strings.Trim(strings.TrimPrefix(buf, "NICK "), " "), " ")[0]
+			if (len(this_user.nickname) > MAXNICKLEN){
+				send_mp(this_user, "432 " + this_user.nickname + " :Erroneus nickname")
+			}
 			fmt.Println("New co nick: " , this_user.nickname)
 			if (strings.Compare(this_user.username, "#") != 0){
 				var mod int
