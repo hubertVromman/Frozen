@@ -17,6 +17,7 @@ const (
 	R_NEEDMOREPARAMS = 461
 	ERR_ALREADYREGISTRED = 462
 )
+
 func	NICK_cmd(msg string, id int, users *[]User)(string){
 	fmt.Println("NICK_cmd:")
 	fmt.Println("Client: ", msg)
@@ -71,11 +72,12 @@ func	JOIN_cmd(msg string, user_id int, users *[]User, channels *map[string][]int
 	}
 	return (0)
 }
+
 func	PART_cmd(msg []string, id int, users *[]User, channels *map[string][]int)(int){
 	fmt.Println("PART_cmd:")
 	fmt.Println("Client: ", msg)
 
-	for i := range msg[1]{
+	for i := range strings.Split(msg[0], ",") {
 		if _, ok := (*channels)[msg[i]]; ok{
 			var boolean bool = false
 			for j:= range (*channels)[msg[i]]{
@@ -99,6 +101,7 @@ func	PART_cmd(msg []string, id int, users *[]User, channels *map[string][]int)(i
 	}
 	return (1)
 }
+
 func	NAMES_cmd(msg string, id int, users *[]User)(int){
 	fmt.Println("NAMES_cmd:")
 	fmt.Println("Client: ", msg)
@@ -107,9 +110,9 @@ func	NAMES_cmd(msg string, id int, users *[]User)(int){
 
 func	LIST_cmd(msg []string, user_id int, users *[]User, channels *map[string][]int)(int) {
 	fmt.Println("LIST_cmd:")
-	fmt.Println("Client: ", msg, len(msg))
+	fmt.Println("Client: ", msg)
 	send_mp((*users)[user_id], "321 :Channel Users Name")
-	if len(msg) > 1 {
+	if msg[0] != "" {
 		splitted := strings.Split(msg[0], ",")
 		for _, chan_name := range splitted {
 			if users_id, ok := (*channels)[chan_name]; ok {
@@ -130,6 +133,7 @@ func	PRIVMSG_cmd(msg string, id int, users *[]User)(int){
 	fmt.Println(msg)
 	return (1)
 }
+
 func CAP_END_cmd(this_user *User) (){
 	fmt.Println("CAP_END_cmd")
 	send_mp(*this_user, "001 :Welcome to the most modern place to chat, " + this_user.nickname)

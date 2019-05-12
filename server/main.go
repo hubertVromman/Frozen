@@ -99,7 +99,7 @@ func getData(users *[]User, channels *map[string][]int, id int) {
 			JOIN_cmd(strings.Trim(strings.Split(strings.TrimPrefix(buf, "JOIN "), " ")[0], " "), id, users, channels)
 		}
 		if (strings.HasPrefix(buf, "PART ")) {
-			PART_cmd(strings.Split(strings.Trim(strings.TrimPrefix(buf, "USER "), " "), " "), id, users, channels)
+			PART_cmd(strings.Split(strings.Trim(strings.TrimPrefix(buf, "PART "), " "), " "), id, users, channels)
 		}
 		// if (strings.HasPrefix(buf, "WHO ")){
 		// 	buf = strings.Replace(buf, "PART ", "LIST ", 1)
@@ -109,10 +109,10 @@ func getData(users *[]User, channels *map[string][]int, id int) {
 			NAMES_cmd(strings.Trim(strings.TrimPrefix(buf, "USER "), " "), id, users)
 		}
 		if (strings.HasPrefix(buf, "LIST")) {
-			LIST_cmd(strings.Split(strings.TrimPrefix(buf, "LIST"), " "), id, users, channels)
+			LIST_cmd(strings.Split(strings.Trim(strings.TrimPrefix(buf, "LIST"), " "), " "), id, users, channels)
 		}
 		if (strings.HasPrefix(buf, "PRIVMSG ")) {
-			PRIVMSG_cmd(strings.Trim(strings.TrimPrefix(buf, "USER "), " "), id, users)
+			PRIVMSG_cmd(strings.Trim(strings.TrimPrefix(buf, "PRIVMSG "), " "), id, users)
 		}
 		if (strings.HasPrefix(buf, "QUIT")){
 			(*users)[id].online = false
