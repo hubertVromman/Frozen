@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"bufio"
 	"time"
-//	"strings"
+	"os"
+	"strings"
 )
 
 type User struct {
@@ -14,6 +15,7 @@ type User struct {
 	username string
 	cur_channel []int
 	ip string
+	online	bool
 }
 
 type Message struct {
@@ -24,8 +26,7 @@ type Message struct {
 
 type Channel struct {
 	name string
-	users []User
-	is_open int
+	user_id []int
 }
 
 func sendData(conn net.Conn, message *Message, users *[]User, user_id *int, channels *[]Channel) {
@@ -40,25 +41,38 @@ func sendData(conn net.Conn, message *Message, users *[]User, user_id *int, chan
 	}
 }
 
-func getData(conn net.Conn, message *Message, users *[]User, user_id *int, channels *[]Channel) {
-	reader := bufio.NewReader(conn)
-	buf, err := reader.ReadString('\n')
-	if err != nil {
-		return
+func getData(conn net.Conn, users *[]User, user_id *int, channels *[]Channel) {
+		reader := bufio.NewReader(conn)
+	for {
+		buf, err := reader.ReadString('\n')
+		if err != nil {
+			if (*user_id == -1){
+				fmt.Println("Connexion lost with", "unkown user", conn.RemoteAddr().String())
+			}else {
+				fmt.Println("Connexion lost with", (*users)[*user_id], conn.RemoteAddr().String())
+			}
+			return
+		}
+		fmt.Println(buf)
+		if (strings.HasPrefix(buf, "NICK ")){
+			NICK_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "NICK "), " "), user_id, users)
+		}
+		if (strings.HasPrefix(buf, "USER ")){
+			USER_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), user_id, users)
+		}
 	}
-	fmt.Println(buf)
 }
 
 func main() {
 	fmt.Println("Starting server...")
 	ln, err := net.Listen("tcp", ":6667")
 	if err != nil {
-		// handle error
+		fmt.Println("error:", err)
+		os.Exit(-1)
 	}
 	var users []User
 	var channels []Channel
 	var users_id []int
-	var message Message
 	// go getAllMessages(&str)
 	fmt.Println("Server started")
 	for {
@@ -68,6 +82,6 @@ func main() {
 		}
 		fmt.Println("New connection !")
 		users_id = append(users_id, -1)
-		go getData(conn, &message, &users, &users_id[len(users_id) - 1], &channels)
+		go getData(conn, &users, &users_id[len(users_id) - 1], &channels)
 	}
 }
