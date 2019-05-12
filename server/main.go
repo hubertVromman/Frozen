@@ -63,38 +63,57 @@ func sendData(message Message, users []User, channels []Channel) {
 	}
 }
 
-func getData(conn net.Conn, users *[]User, user_id *int, channels *[]Channel) {
-		reader := bufio.NewReader(conn)
+func getData(conn net.Conn, users *[]User, channels *[]Channel) {
+	reader := bufio.NewReader(conn)
+	var user_id int = -1
 	for {
 		buf, err := reader.ReadString('\n')
 		if err != nil {
-			if (*user_id == -1){
+			if (user_id == -1){
 				fmt.Println("Connexion lost with", "unkown user", conn.RemoteAddr().String())
 			}else {
-				fmt.Println("Connexion lost with", (*users)[*user_id], conn.RemoteAddr().String())
+				fmt.Println("Connexion lost with", (*users)[user_id], conn.RemoteAddr().String())
 			}
 			return
 		}
 		fmt.Println(buf)
 		if (strings.HasPrefix(buf, "NICK ")){
-			NICK_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "NICK "), " "), user_id, users)
+			str := NICK_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "NICK "), " "), &user_id, users)
+			sendData(str, *user, *channel)
 		}
 		if (strings.HasPrefix(buf, "USER ")){
-			USER_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), user_id, users)
+			USER_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), &user_id, users)
+		}
+		if (strings.HasPrefix(buf, "PASS ")){
+			USER_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), &user_id, users)
+		}
+		if (strings.HasPrefix(buf, "JOIN ")){
+			USER_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), &user_id, users)
+		}
+		if (strings.HasPrefix(buf, "PART ")){
+			USER_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), &user_id, users)
+		}
+		if (strings.HasPrefix(buf, "NAMES ")){
+			USER_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), &user_id, users)
+		}
+		if (strings.HasPrefix(buf, "LIST ")){
+			USER_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), &user_id, users)
+		}
+		if (strings.HasPrefix(buf, "PRIVMSG ")){
+			USER_cmd(conn, strings.Trim(strings.TrimPrefix(buf, "USER "), " "), &user_id, users)
 		}
 	}
 }
 
 func main() {
 	fmt.Println("Starting server...")
-	ln, err := net.Listen("tcp", ":8080")
+	ln, err := net.Listen("tcp", ":6667")
 	if err != nil {
 		fmt.Println("error:", err)
 		os.Exit(-1)
 	}
 	var users []User
 	var channels []Channel
-	var users_id []int
 	// go getAllMessages(&str)
 	fmt.Println("Server started")
 	for {
@@ -103,7 +122,6 @@ func main() {
 			// handle error
 		}
 		fmt.Println("New connection !")
-		users_id = append(users_id, -1)
-		go getData(conn, &users, &users_id[len(users_id) - 1], &channels)
+		go getData(conn, &users, &channels)
 	}
 }
