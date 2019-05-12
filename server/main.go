@@ -71,11 +71,13 @@ func sendData(message Message, users []User, channels []Channel) {
 func getData(users *[]User, channels *[]Channel, id int) {
 	reader := bufio.NewReader((*users)[id].conn)
 	fmt.Println("user: ", id, " in getData loop")
+	defer (*users)[id].conn.Close()
 	for {
 		fmt.Println("user: ", id, " in getData loop")
 		buf, err := reader.ReadString('\n')
 		if err != nil {
 			fmt.Println("Connexion lost with", (*users)[id], (*users)[id].conn.RemoteAddr().String())
+			(*users)[id].conn.Close()
 			return
 		}
 		fmt.Println("New message from client: " , buf)
@@ -111,8 +113,8 @@ func getData(users *[]User, channels *[]Channel, id int) {
 		if (strings.HasPrefix(buf, "NAMES ")) {
 			NAMES_cmd(strings.Trim(strings.TrimPrefix(buf, "USER "), " "), id, users)
 		}
-		if (strings.HasPrefix(buf, "LIST ")) {
-			LIST_cmd(strings.Trim(strings.TrimPrefix(buf, "USER "), " "), id, users)
+		if (strings.HasPrefix(buf, "LIST")) {
+			LIST_cmd(strings.Split(strings.TrimPrefix(buf, "LIST"), " "), id, users, channels)
 		}
 		if (strings.HasPrefix(buf, "PRIVMSG ")) {
 			PRIVMSG_cmd(strings.Trim(strings.TrimPrefix(buf, "USER "), " "), id, users)
@@ -178,7 +180,6 @@ func tmp_getData(conn net.Conn, users *[]User, channels *[]Channel) {
 			fmt.Println("Connexion lost with", "unkown user", conn.RemoteAddr().String())
 			return
 		}
-		buf = buf[0:len(buf) - 2]
 		if (strings.HasPrefix(buf, "NICK ")){
 			this_user.nickname = strings.Split(strings.Trim(strings.TrimPrefix(buf, "NICK "), " "), " ")[0]
 			if (len(this_user.nickname) > MAXNICKLEN){

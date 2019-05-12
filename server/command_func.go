@@ -2,7 +2,7 @@ package main
 
 import (
 	"strings"
-	// "net"
+	"strconv"
 	"fmt"
 )
 
@@ -91,11 +91,30 @@ func	NAMES_cmd(msg string, id int, users *[]User)(int){
 	fmt.Println("Client: ", msg)
 	return (1)
 }
-func	LIST_cmd(msg string, user_id int, users *[]User)(int) {
+
+func	LIST_cmd(msg []string, user_id int, users *[]User, channels *[]Channel)(int) {
 	fmt.Println("LIST_cmd:")
-	fmt.Println("Client: ", msg)
+	fmt.Println("Client: ", msg, len(msg))
+	send_mp((*users)[user_id], "321 :Channel Users Name")
+	if len(msg) > 1 {
+		splitted := strings.Split(msg[0], ",")
+		for _, chan_name := range splitted {
+			for _, channel := range *channels {
+				if chan_name == channel.name {
+					send_mp((*users)[user_id], "322 :" + chan_name + " " + strconv.Itoa(len(channel.users_id)) + " :[+nt]")
+					break
+				}
+			}
+		}
+	} else {
+		for _, channel := range *channels {
+			send_mp((*users)[user_id], "322 :" + channel.name + " " + strconv.Itoa(len(channel.users_id)) + " :[+nt]")
+		}
+	}
+	send_mp((*users)[user_id], "323 " + (*users)[user_id].nickname + " :End of /LIST")
 	return (0)
 }
+
 func	PRIVMSG_cmd(msg string, id int, users *[]User)(int){
 	fmt.Println("PRIVMSG_cmd:")
 	fmt.Println(msg)
