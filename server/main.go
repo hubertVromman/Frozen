@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"bufio"
 	"time"
-	"strings"
+//	"strings"
 )
 
 type User struct {
@@ -13,6 +13,7 @@ type User struct {
 	nickname string
 	username string
 	cur_channel []int
+	ip string
 }
 
 type Message struct {
@@ -30,11 +31,11 @@ type Channel struct {
 func sendData(conn net.Conn, message *Message, users *[]User, user_id *int, channels *[]Channel) {
 	for {
 		if *user_id != -1 {
-			if message.channel_id == (*users)[*user_id].cur_channel {
-				conn.Write([]byte(message.nick + ": " + message.data))
-			}
+//			if message.channel_id == (*users)[*user_id].cur_channel {
+//				conn.Write([]byte(message.nick + ": " + message.data))
+//			}
 			<-time.After(time.Millisecond)
-			message.channel_id = -1
+//			message.channel_id = -1
 		}
 	}
 }
@@ -45,11 +46,12 @@ func getData(conn net.Conn, message *Message, users *[]User, user_id *int, chann
 	if err != nil {
 		return
 	}
+	fmt.Println(buf)
 }
 
 func main() {
 	fmt.Println("Starting server...")
-	ln, err := net.Listen("tcp", ":8080")
+	ln, err := net.Listen("tcp", ":6667")
 	if err != nil {
 		// handle error
 	}
@@ -67,6 +69,5 @@ func main() {
 		fmt.Println("New connection !")
 		users_id = append(users_id, -1)
 		go getData(conn, &message, &users, &users_id[len(users_id) - 1], &channels)
-		go sendData(conn, &message, &users, &users_id[len(users_id) - 1], &channels)
 	}
 }
