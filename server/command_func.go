@@ -2,7 +2,7 @@ package main
 
 import (
 	"strings"
-	//"net"
+	// "net"
 	"fmt"
 )
 
@@ -53,10 +53,39 @@ func	NICK_cmd(msg string, id int, users *[]User)(string){
 	return (":" + nickname + " NICK")
 }
 
-func	JOIN_cmd(msg string, id int, users *[]User)(int){
+func	JOIN_cmd(msg string, user_id int, users *[]User, channels *[]Channel) (int) {
 	fmt.Println("JOIN_cmd:")
 	fmt.Println("Client: ", msg)
-	return (1)
+	splitted := strings.Split(msg, ",")
+	for _, chan_name := range splitted { //loop over param
+		if strings.ContainsAny(chan_name, ", \007") || (chan_name[0] != '#' && chan_name[0] != '&') {
+			send_mp((*users)[user_id], "479 :" + chan_name + " Illegal channel name")
+			return (-1)
+		}
+		for channel_id, channel := range *channels { //search channel
+			if channel.name == chan_name {
+				for _, chan_id := range (*users)[user_id].cur_channel { //search if already in channel
+					if chan_id == channel_id {
+						return (0)
+					}
+				}
+				(*users)[user_id].cur_channel = append((*users)[user_id].cur_channel, channel_id) //join channel
+				channel.users_id = append(channel.users_id, user_id)
+				send_mp((*users)[user_id], "JOIN " + chan_name)
+				send_mp((*users)[user_id], "MODE " + chan_name + " +nt")
+				send_mp((*users)[user_id], "353 = " + chan_name + " :@hvromman")
+				send_mp((*users)[user_id], "366 " + chan_name + " :End of /NAMES list")
+				return (0)
+			}
+		}
+		(*users)[user_id].cur_channel = append((*users)[user_id].cur_channel, len(*channels))
+		*channels = append(*channels, Channel{chan_name, []int{user_id}}) //create channel
+		send_mp((*users)[user_id], "JOIN " + chan_name)
+		send_mp((*users)[user_id], "MODE " + chan_name + " +nt")
+		send_mp((*users)[user_id], "353 = " + chan_name + " :@hvromman")
+		send_mp((*users)[user_id], "366 " + chan_name + " :End of /NAMES list")
+	}
+	return (0)
 }
 func	PART_cmd(msg string, id int, users *[]User)(int){
 	fmt.Println("PART_cmd:")

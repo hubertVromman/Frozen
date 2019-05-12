@@ -39,6 +39,10 @@ func send_mp(dest User, message string) bool {
 	}
 }
 
+// func send_to_conn(conn net.Conn, message string) bool {
+// 	conn.Write([]byte(message))
+// }
+
 func sendData(message Message, users []User, channels []Channel) {
 	if message.dest[0] == '#' { //channel message
 		message.dest = message.dest[1:]
@@ -60,7 +64,7 @@ func sendData(message Message, users []User, channels []Channel) {
 				return
 			}
 		}
-		send_mp(users[message.sender_id], "User not found")
+		send_mp(users[message.sender_id], string(401) + " " + message.dest +":No suck nick/channel")
 	}
 }
 
@@ -88,25 +92,29 @@ func getData(users *[]User, channels *[]Channel, id int) {
 				return
 			}
 		}
-		if (strings.HasPrefix(buf, "USER ")){
+		if (strings.HasPrefix(buf, "USER ")) {
 			send_mp((*users)[id], "462 :You may not reregister")
 		}
-		if (strings.HasPrefix(buf, "PASS ")){
+		if (strings.HasPrefix(buf, "PASS ")) {
 			send_mp((*users)[id], "462 :You may not reregister")
 		}
-		if (strings.HasPrefix(buf, "JOIN ")){
-			JOIN_cmd(strings.Trim(strings.TrimPrefix(buf, "USER "), " "), id, users)
+		if (strings.HasPrefix(buf, "JOIN ")) {
+			JOIN_cmd(strings.Trim(strings.Split(strings.TrimPrefix(buf, "JOIN "), " ")[0], " "), id, users, channels)
 		}
-		if (strings.HasPrefix(buf, "PART ")){
+		if (strings.HasPrefix(buf, "PART ")) {
 			PART_cmd(strings.Trim(strings.TrimPrefix(buf, "USER "), " "), id, users)
 		}
-		if (strings.HasPrefix(buf, "NAMES ")){
+		// if (strings.HasPrefix(buf, "WHO ")){
+		// 	buf = strings.Replace(buf, "PART ", "LIST ", 1)
+		
+		// }
+		if (strings.HasPrefix(buf, "NAMES ")) {
 			NAMES_cmd(strings.Trim(strings.TrimPrefix(buf, "USER "), " "), id, users)
 		}
-		if (strings.HasPrefix(buf, "LIST ")){
+		if (strings.HasPrefix(buf, "LIST ")) {
 			LIST_cmd(strings.Trim(strings.TrimPrefix(buf, "USER "), " "), id, users)
 		}
-		if (strings.HasPrefix(buf, "PRIVMSG ")){
+		if (strings.HasPrefix(buf, "PRIVMSG ")) {
 			PRIVMSG_cmd(strings.Trim(strings.TrimPrefix(buf, "USER "), " "), id, users)
 		}
 		if (strings.HasPrefix(buf, "QUIT")){
@@ -170,6 +178,7 @@ func tmp_getData(conn net.Conn, users *[]User, channels *[]Channel) {
 			fmt.Println("Connexion lost with", "unkown user", conn.RemoteAddr().String())
 			return
 		}
+		buf = buf[0:len(buf) - 2]
 		if (strings.HasPrefix(buf, "NICK ")){
 			this_user.nickname = strings.Split(strings.Trim(strings.TrimPrefix(buf, "NICK "), " "), " ")[0]
 			if (len(this_user.nickname) > MAXNICKLEN){
@@ -217,7 +226,7 @@ func tmp_getData(conn net.Conn, users *[]User, channels *[]Channel) {
 
 func main() {
 	fmt.Println("Starting server...")
-	ln, err := net.Listen("tcp", ":6667")
+	ln, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		fmt.Println("error:", err)
 		os.Exit(-1)
